@@ -61,7 +61,6 @@ int main(void)
 		if(cnt%2 == 0)
 			SendDataToProcessing(); //프로세싱으로 값 전달
 			//측정 주기 시간이 짝수(2ms 단위로 하기 위해서)이면 프로세싱으로 보낸다.
-		usleep(5000);
 	}
 
 	return 0;
@@ -78,7 +77,7 @@ void calibAccelGyro(){
 		readAccelGyro();
 		sumAcX += AcX; sumAcY += AcY; sumAcZ += AcZ;
 		sumGyX += GyX; sumGyY += GyY; sumGyZ += GyZ;
-		usleep(100);
+		usleep(10000);
 	}
 	baseAcX = sumAcX / 10; baseAcY = sumAcY / 10; baseAcZ = sumAcZ / 10;
 	baseGyX = sumGyX / 10; baseGyY = sumGyY / 10; baseGyZ = sumGyZ / 10;
@@ -180,13 +179,13 @@ void calcDT(){
 
 void SendDataToProcessing(){
 	std::cout << "dt : " << dt << std::endl;
-	printf("accel_angle_x : %f\n", accel_angle_x);
-	printf("accel_angle_y : %f\n", accel_angle_y);
-	printf("accel_angle_z : %f\n", accel_angle_z);
+	//printf("accel_angle_x : %f\n", accel_angle_x);
+	//printf("accel_angle_y : %f\n", accel_angle_y);
+	//printf("accel_angle_z : %f\n", accel_angle_z);
 
-	printf("gyro_angle_x  : %f\n", gyro_angle_x);
-	printf("gyro_angle_y  : %f\n", gyro_angle_y);
-	printf("gyro_angle_z  : %f\n", gyro_angle_z);
+	//printf("gyro_angle_x  : %f\n", gyro_angle_x);
+	//printf("gyro_angle_y  : %f\n", gyro_angle_y);
+	//printf("gyro_angle_z  : %f\n", gyro_angle_z);
 
 	printf("filtered_angle_x : %f\n", filtered_angle_x);
 	printf("filtered_angle_y : %f\n", filtered_angle_y);
