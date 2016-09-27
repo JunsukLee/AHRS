@@ -15,6 +15,8 @@ class MPU9150
 {
 
 public:
+    void init();
+    void measurement();
     void SendDataToProcessing();
     
 public:
