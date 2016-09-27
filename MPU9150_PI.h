@@ -16,6 +16,10 @@ class MPU9150
 
 public:
     void SendDataToProcessing();
+    
+public:
+    float filtered_angle_x, filtered_angle_y, filtered_angle_z;
+    
 private:
     void calibAccelGyro();
     void calcAccelYPR();
@@ -38,8 +42,7 @@ private:
     float gyro_x, gyro_y, gyro_z; //각속도 저장 전역변수 //각속도 : 단위시간당 회전한 각도
     long AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ; 
     float accel_angle_x, accel_angle_y, accel_angle_z;
-    float gyro_angle_x, gyro_angle_y, gyro_angle_z;
-    float filtered_angle_x, filtered_angle_y, filtered_angle_z;
+    float gyro_angle_x, gyro_angle_y, gyro_angle_z;    
     float baseAcX, baseAcY, baseAcZ;  //가속도 평균값 저장 변수
     float baseGyX, baseGyY, baseGyZ;  //자이로 평균값 저장 변수
 
