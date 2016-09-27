@@ -90,7 +90,7 @@ void MPU9150::calcFilteredYPR(){
 	//그래서 위에(calcAccelYPR) 보게 되면 accel_angle_z 는 0이다.
 }
 
-void readAccelGyro(){
+void MPU9150::readAccelGyro(){
 	ACCEL_X = wiringPiI2CReadReg8(MPU_9150, (0x3B));
 	ACCEL_X = ACCEL_X << 8 | wiringPiI2CReadReg8(MPU_9150, 0x3C);
 
