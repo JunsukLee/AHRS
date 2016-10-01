@@ -8,7 +8,7 @@
 
 using namespace std;
 
-
+void init();
 void calibAccelGyro();
 void calcAccelYPR();
 void calcGyroYPR();
@@ -42,8 +42,7 @@ struct timeval prev_point, now_point;
 
 int main(void)
 {
-	MPU_9150 = wiringPiI2CSetup(0x68); // sensor Address
-	wiringPiI2CWriteReg8(MPU_9150, 0x6B, 0); // PWR_MGMT_1
+    init();
 
 	calibAccelGyro();
 	initDT();
@@ -58,7 +57,7 @@ int main(void)
 
 		static int cnt;
 		cnt++;
-		if(cnt%2 == 0)
+		if(cnt%3 == 0)
 			SendDataToProcessing(); //프로세싱으로 값 전달
 			//측정 주기 시간이 짝수(2ms 단위로 하기 위해서)이면 프로세싱으로 보낸다.
 	}
@@ -66,21 +65,53 @@ int main(void)
 	return 0;
 }
 
+void init()
+{
+    MPU_9150 = wiringPiI2CSetup(0x68); // sensor Address
+    wiringPiI2CWriteReg8(MPU_9150, 0x6B, 0); // PWR_MGMT_1
+
+    sleep(2);
+
+    wiringPiI2CWriteReg8(MPU_9150, 0x24, 0x40);
+    wiringPiI2CWriteReg8(MPU_9150, 0x25, 0x8C);
+    wiringPiI2CWriteReg8(MPU_9150, 0x26, 0x02);
+    wiringPiI2CWriteReg8(MPU_9150, 0x27, 0x88);
+    wiringPiI2CWriteReg8(MPU_9150, 0x28, 0x0C);
+    wiringPiI2CWriteReg8(MPU_9150, 0x29, 0x0A);
+    wiringPiI2CWriteReg8(MPU_9150, 0x2A, 0x81);
+    wiringPiI2CWriteReg8(MPU_9150, 0x64, 0x01);
+    wiringPiI2CWriteReg8(MPU_9150, 0x67, 0x03);
+    wiringPiI2CWriteReg8(MPU_9150, 0x01, 0x80);
+    
+    
+    wiringPiI2CWriteReg8(MPU_9150, 0x34, 0x04);
+    wiringPiI2CWriteReg8(MPU_9150, 0x64, 0x00);
+    wiringPiI2CWriteReg8(MPU_9150, 0x6A, 0x00);
+    wiringPiI2CWriteReg8(MPU_9150, 0x64, 0x01);
+    wiringPiI2CWriteReg8(MPU_9150, 0x6A, 0x20);
+    wiringPiI2CWriteReg8(MPU_9150, 0x34, 0x13);
+    
+    sleep(2); 
+}
+
+
 void calibAccelGyro(){
 	float sumAcX = 0, sumAcY = 0, sumAcZ = 0;
 	float sumGyX = 0, sumGyY = 0, sumGyZ = 0;
 
+    short total = 10;
+
 	readAccelGyro(); //가속도 자이로 센서 읽어들임
 
 	//평균값 구하기
-	for(int i=0; i<10; i++){
+	for(int i=0; i<total; i++){
 		readAccelGyro();
 		sumAcX += AcX; sumAcY += AcY; sumAcZ += AcZ;
 		sumGyX += GyX; sumGyY += GyY; sumGyZ += GyZ;
 		usleep(10000);
 	}
-	baseAcX = sumAcX / 10; baseAcY = sumAcY / 10; baseAcZ = sumAcZ / 10;
-	baseGyX = sumGyX / 10; baseGyY = sumGyY / 10; baseGyZ = sumGyZ / 10;
+	baseAcX = sumAcX / total; baseAcY = sumAcY / total; baseAcZ = sumAcZ / total;
+	baseGyX = sumGyX / total; baseGyY = sumGyY / total; baseGyZ = sumGyZ / total;
 }
 
 
@@ -122,7 +153,7 @@ void calcGyroYPR(){
 
 
 void calcFilteredYPR(){
-	const float ALPHA = 0.96;
+	const float ALPHA = 0.95;
 	float tmp_angle_x, tmp_angle_y, tmp_angle_z;  //이전 필터 각도(prev)
 
 	tmp_angle_x = filtered_angle_x + gyro_x * dt; //자이로 각도 = 각속도 x 센서 입력 주기
@@ -172,8 +203,14 @@ void calcDT(){
 	gettimeofday(&now_point, NULL);
 	dt = (double)(now_point.tv_sec)+(double)(now_point.tv_usec)/1000000.0-(double)(prev_point.tv_sec)-(double)(prev_point.tv_usec)/1000000.0;
 
+    //printf("now_usec : %d\n", now_point.tv_usec);
+    //printf("pre_usec  : %d\n", prev_point.tv_usec);
+
 	prev_point.tv_sec = now_point.tv_sec;
 	prev_point.tv_usec = now_point.tv_usec;
+
+    //sleep(1);
+
 
 }
 
@@ -191,5 +228,22 @@ void SendDataToProcessing(){
 	printf("filtered_angle_y : %f\n", filtered_angle_y);
 	printf("filtered_angle_z : %f\n", filtered_angle_z);
 
-	printf("\n\n");
+    printf("\n----------------------\n\n");
+
+    if(filtered_angle_x < -75){
+        printf("Front\t");
+    }else if(filtered_angle_x <= -2.5 && filtered_angle_x >= -15){
+        printf("Back\t");
+    }
+
+    if(filtered_angle_y < -75){
+        printf("Left\t");
+    }//else if(filtered_angle_y <= -2.5 && filtered_angle_y >= -15){
+    else if(filtered_angle_y >= 25){
+        printf("Right\t");    
+    }
+
+
+
+	printf("\n----------------------\n\n");
 }
